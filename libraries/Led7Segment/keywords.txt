@@ -1,0 +1,31 @@
+#######################################
+# Syntax Coloring Map Led7Segment
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+Led7Segment	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+displayText	KEYWORD2
+displayNumber	KEYWORD2
+displayCharacter	KEYWORD2
+on	KEYWORD2
+off	KEYWORD2
+clear	KEYWORD2
+fade	KEYWORD2
+
+#######################################
+# Instances (KEYWORD2)
+#######################################
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+ascii	LITERAL1
