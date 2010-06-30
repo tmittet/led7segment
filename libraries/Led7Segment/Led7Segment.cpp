@@ -1,5 +1,5 @@
 /************************************************************************/
-/* 7-Segment LED Display library, for 74HC series chips, v1.0.          */
+/* 7-Segment LED Display library, for 74HC series chips, v1.1.          */
 /*                                                                      */
 /* This library is free software: you can redistribute it and/or modify */
 /* it under the terms of the GNU General Public License as published by */
@@ -19,14 +19,15 @@
 
 #include "WProgram.h"
 #include "Led7Segment.h"
-//#include <math.h>
 
-Led7Segment::Led7Segment(uint8_t displayPanels, uint8_t clockPin, uint8_t dataPin, uint8_t dimPin)
+Led7Segment::Led7Segment(uint8_t displayPanels, uint8_t clockPin, uint8_t dataPin, uint8_t dimPin, bool reverseDim)
 {
   this->displayPanels = displayPanels;
   this->clockPin = clockPin;
   this->dataPin = dataPin;
   this->dimPin = dimPin;
+  this->reverseDim = reverseDim;
+  brightness = reverseDim ? 0 : 255;
   currentNumber = FLT_MIN;
   pinMode(clockPin,OUTPUT);
   pinMode(dataPin,OUTPUT);
@@ -49,15 +50,24 @@ void Led7Segment::displayText(char text[])
   on();
 }
 
-void Led7Segment::displayNumber(float number, bool leadingZero, uint8_t decimals)
+void Led7Segment::displayNumber(float number, uint8_t decimals, bool leadingZero)
 {
-  if(currentNumber != number)
-  {
+  displayNumber(number, decimals, leadingZero, 0, 0);
+}
+
+void Led7Segment::displayNumber(float number, uint8_t decimals, bool leadingZero, uint8_t padLeft, uint8_t padRight)
+{
+//if(currentNumber != number)
+//{
     off();
     bool negative = number < 0;
     uint32_t real = round(abs(number) * pow(10, decimals));
     uint8_t digits = 0;
-    while(real > 0 && displayPanels + decimals > digits)
+    for(uint8_t i = 0; i < padRight; i++)
+    {
+      displayCharacter(' ', 0);
+    }
+    while((real > 0 || digits < decimals + 1) && displayPanels + decimals > digits)
     {
       shiftOut(dataPin, clockPin, LSBFIRST, ascii[(real % 10) + 15] + (decimals && digits == decimals));
       real /= 10;
@@ -72,9 +82,13 @@ void Led7Segment::displayNumber(float number, bool leadingZero, uint8_t decimals
           displayCharacter('-', 0);
           negative = 0;
         }
-        else
+        else if(digits < displayPanels - padLeft - padRight)
         {
-          displayCharacter(leadingZero ? '0' : ' ', decimals && digits == decimals);
+          displayCharacter(leadingZero ? '0' : ' ', 0);
+        }
+        else if(digits >= displayPanels - padLeft)
+        {
+          displayCharacter(' ', 0);
         }
         digits++;
       }
@@ -86,7 +100,7 @@ void Led7Segment::displayNumber(float number, bool leadingZero, uint8_t decimals
     }
     on();
     currentNumber = number;
-  }
+//}
 }
 
 void Led7Segment::displayCharacter(char character, bool dot)
@@ -97,12 +111,12 @@ void Led7Segment::displayCharacter(char character, bool dot)
 
 void Led7Segment::on()
 {
-  analogWrite(dimPin, 255 - brightness);
+  updateBrightness();
 }
 
 void Led7Segment::off()
 {
-  digitalWrite(dimPin, HIGH);
+  digitalWrite(dimPin, LOW);
 }
 
 void Led7Segment::clear()
@@ -124,7 +138,7 @@ void Led7Segment::fade(uint16_t ms, uint8_t value)
     if(ms == 0)
     {
       brightness = value;
-      analogWrite(dimPin, 255 - brightness);
+      updateBrightness();
     }
     else
     {
@@ -132,7 +146,7 @@ void Led7Segment::fade(uint16_t ms, uint8_t value)
       while(brightness != value)
       {
         brightness += factor;
-        analogWrite(dimPin, 255 - brightness);
+        updateBrightness();
         delayMicroseconds(ms * 4);
       }
     }
@@ -147,4 +161,9 @@ uint8_t Led7Segment::charToPattern(char character)
 {
   if(character < 33) return 0;
   return ascii[character - (character > 96 ? 65 : 33)];
+}
+
+void Led7Segment::updateBrightness()
+{
+  analogWrite(dimPin, reverseDim ? 255 - brightness : brightness);
 }

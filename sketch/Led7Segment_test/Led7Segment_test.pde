@@ -1,5 +1,5 @@
 /************************************************************************/
-/* 7-Segment LED Display library test sketch, v1.0.                     */
+/* 7-Segment LED Display library test sketch, v1.1.                     */
 /*                                                                      */
 /* This library is free software: you can redistribute it and/or modify */
 /* it under the terms of the GNU General Public License as published by */
@@ -19,7 +19,8 @@
 
 #include <Led7Segment.h>
 
-Led7Segment led7 = Led7Segment(4, 3, 4, 5);
+// displayPanels = 4, clockPin = 3, dataPin = 4, dimPin = 5, reverseDim = false
+Led7Segment led7 = Led7Segment(4, 3, 4, 5, false);
 
 void setup()
 { }

@@ -1,5 +1,5 @@
 /************************************************************************/
-/* 7-Segment LED Display library, for 74HC series chips, v1.0.          */
+/* 7-Segment LED Display library, for 74HC series chips, v1.1.          */
 /*                                                                      */
 /* This library is free software: you can redistribute it and/or modify */
 /* it under the terms of the GNU General Public License as published by */
@@ -97,10 +97,11 @@ class Led7Segment
 {
 
 public:
-  Led7Segment(uint8_t displayPanels, uint8_t clockPin, uint8_t dataPin, uint8_t dimPin);
+  Led7Segment(uint8_t displayPanels, uint8_t clockPin, uint8_t dataPin, uint8_t dimPin, bool reverseDim);
 
   void displayText(char text[]);
-  void displayNumber(float number, bool leadingZero, uint8_t decimals);
+  void displayNumber(float number, uint8_t decimals, bool leadingZero);
+  void displayNumber(float number, uint8_t decimals, bool leadingZero, uint8_t padLeft, uint8_t padRight);
   void displayCharacter(char character, bool dot);
   void on();
   void off();
@@ -110,7 +111,9 @@ public:
 
 private:
   uint8_t charToPattern(char character);
+  void updateBrightness();
   uint8_t displayPanels, clockPin, dataPin, dimPin, brightness;
+  bool reverseDim;
   float currentNumber;
 };
 
