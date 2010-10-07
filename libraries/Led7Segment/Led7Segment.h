@@ -114,7 +114,6 @@ private:
   void updateBrightness();
   uint8_t displayPanels, clockPin, dataPin, dimPin, brightness;
   bool reverseDim;
-  float currentNumber;
 };
 
 #endif

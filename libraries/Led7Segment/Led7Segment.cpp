@@ -28,7 +28,6 @@ Led7Segment::Led7Segment(uint8_t displayPanels, uint8_t clockPin, uint8_t dataPi
   this->dimPin = dimPin;
   this->reverseDim = reverseDim;
   brightness = reverseDim ? 0 : 255;
-  currentNumber = FLT_MIN;
   pinMode(clockPin,OUTPUT);
   pinMode(dataPin,OUTPUT);
   pinMode(dimPin,OUTPUT);
@@ -57,56 +56,51 @@ void Led7Segment::displayNumber(float number, uint8_t decimals, bool leadingZero
 
 void Led7Segment::displayNumber(float number, uint8_t decimals, bool leadingZero, uint8_t padLeft, uint8_t padRight)
 {
-//if(currentNumber != number)
-//{
-    off();
-    bool negative = number < 0;
-    uint32_t real = round(abs(number) * pow(10, decimals));
-    uint8_t digits = 0;
-    for(uint8_t i = 0; i < padRight; i++)
+  off();
+  bool negative = number < 0;
+  uint32_t real = round(abs(number) * pow(10, decimals));
+  uint8_t digits = 0;
+  for(uint8_t i = 0; i < padRight; i++)
+  {
+    displayCharacter(' ', 0);
+  }
+  while((real > 0 || digits < decimals + 1) && displayPanels + decimals > digits)
+  {
+    shiftOut(dataPin, clockPin, LSBFIRST, ascii[(real % 10) + 15] + (decimals && digits == decimals));
+    real /= 10;
+    digits++;
+  }
+  if(real == 0)
+  {
+    while(digits < displayPanels || (negative && digits - decimals < displayPanels))
     {
-      displayCharacter(' ', 0);
-    }
-    while((real > 0 || digits < decimals + 1) && displayPanels + decimals > digits)
-    {
-      shiftOut(dataPin, clockPin, LSBFIRST, ascii[(real % 10) + 15] + (decimals && digits == decimals));
-      real /= 10;
+      if(negative && (!leadingZero || digits >= displayPanels - 1))
+      {
+        displayCharacter('-', 0);
+        negative = 0;
+      }
+      else if(digits < displayPanels - padLeft - padRight)
+      {
+        displayCharacter(leadingZero ? '0' : ' ', 0);
+      }
+      else if(digits >= displayPanels - padLeft)
+      {
+        displayCharacter(' ', 0);
+      }
       digits++;
     }
-    if(real == 0)
-    {
-      while(digits < displayPanels || (negative && digits - decimals < displayPanels))
-      {
-        if(negative && (!leadingZero || digits >= displayPanels - 1))
-        {
-          displayCharacter('-', 0);
-          negative = 0;
-        }
-        else if(digits < displayPanels - padLeft - padRight)
-        {
-          displayCharacter(leadingZero ? '0' : ' ', 0);
-        }
-        else if(digits >= displayPanels - padLeft)
-        {
-          displayCharacter(' ', 0);
-        }
-        digits++;
-      }
-    }
-    // Overflow, real isn't zero
-    else
-    {
-      clear('-');
-    }
-    on();
-    currentNumber = number;
-//}
+  }
+  // Overflow, real isn't zero
+  else
+  {
+    clear('-');
+  }
+  on();
 }
 
 void Led7Segment::displayCharacter(char character, bool dot)
 {
   shiftOut(dataPin, clockPin, LSBFIRST, charToPattern(character) + dot);
-  currentNumber = FLT_MIN;
 }
 
 void Led7Segment::on()
