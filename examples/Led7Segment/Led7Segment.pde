@@ -14,7 +14,7 @@
 /* You should have received a copy of the GNU General Public License    */
 /* along with this library. If not, see <http://www.gnu.org/licenses/>. */
 /*                                                                      */
-/* Written by Thomas Mittet code@lookout.no March 2010.                 */
+/* Written by Thomas Mittet (code@lookout.no) March 2010.               */
 /************************************************************************/
 
 #include <Led7Segment.h>
@@ -28,7 +28,8 @@ void setup()
 void loop()
 {
   led7.fade(500, 0);
-  led7.displayText((char[4]){ 'T', 'e', 's', 't' });
+  char text[] = { 'T','e','s','t' };
+  led7.displayText(text);
   led7.fade(500, 255);
   led7.fade(500, 0);
   led7.displayNumber(31.559, true, 2);
